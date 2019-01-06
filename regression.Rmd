@@ -1,0 +1,945 @@
+---
+title: ''
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+  word_document: default
+---
+
+
+
+```{r,echo = FALSE, message = FALSE}
+library(readr)
+hotel_df2 <- read_csv("~/Documents/dsR/data/hotel_df2.csv")
+hotel_df2 = hotel_df2[,-1]
+
+hotel_df <- read_csv("~/Documents/dsR/data/hotel_df.csv")
+hotel_df = hotel_df[, -1]
+
+require(dplyr)
+new_df = inner_join(hotel_df,hotel_df2,by = "name")
+
+```
+
+```{r,echo = FALSE, message = FALSE}
+
+
+
+
+district = NULL 
+for(i in c(1:569)){
+  end = regexpr("區",new_df[i,c("address")])
+  
+  a = substr(new_df[i,7],end - 2, end)
+  
+  district =rbind( district, a)
+  
+  }
+new_df = cbind(new_df,district)
+as.character(new_df[1,7])
+
+MRT = NULL
+MRT_dist = NULL
+for(i in c(1:569)){
+  for(j in c(1:6)){
+    if(regexpr("捷運",new_df[i, 31 + j])>0){
+      r = new_df[i, 38 + j]
+      start = regexpr("運",new_df[i,31 + j])
+      end  = regexpr("站", new_df[i,31 + j])
+      mrt = substr(new_df[i,31 + j], start+1, end-1)
+      
+      MRT = rbind(MRT, mrt)
+      MRT_dist = rbind(MRT_dist, r)
+      break
+    }
+    if(j == 6){
+      MRT = rbind(MRT, NA)
+      MRT_dist = rbind(MRT_dist, NA)
+    }
+  }
+}
+```
+
+
+
+```{r,echo = FALSE, message = FALSE}
+
+
+
+
+new_df = cbind(new_df,MRT,MRT_dist)
+new_df$wifi_level = as.numeric(new_df$wifi_level)
+new_df$facility_level = as.numeric(new_df$facility_level)
+
+total_pricetwo2 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star),new_df_starExist )
+
+#summary(total_pricetwo1)
+new_df$facility_level = as.numeric(new_df$facility_level)
+new_df$wifi_level = as.numeric(new_df$wifi_level)
+
+
+```
+
+#hedonic pricing model
+```{r,echo = FALSE, message = FALSE}
+
+total_pricetwo0_log = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist,new_df_starExist )
+total_pricetwo4_log =  lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+as.factor(district),new_df)
+a = summary(total_pricetwo4_log)
+a$coefficients
+
+
+new_df_one$lprice_two = log(new_df_one$price_two)
+singleroom_pricetwo0_log  = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist
+                           ,new_df_one )
+
+
+singleroom_pricetwo1_log  = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level,new_df_one )
+
+singleroom_pricetwo2_log  = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star),new_df_one )
+
+singleroom_pricetwo3_log  = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+as.factor(district),new_df_one )
+
+a = summary(singleroom_pricetwo3_log)
+a$coefficients[, 2]
+
+
+ 
+     
+   
+summary(total_pricetwo3_log)
+
+
+             
+             
+
+
+   
+  
+
+
+
+  
+  
+ 
+   
+
+
+```
+```{r}
+
+total_pricetwo1_log = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+  clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level,new_df_starExist )
+
+
+total_pricetwo2_log = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+  clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star),new_df_starExist )
+
+total_pricetwo3_log = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+  clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+as.factor(district),new_df_starExist )
+
+
+```
+```{r}
+total_pricetwo0 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist,new_df_starExist )
+total_pricetwo1 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+  I(clean_level^2)+I(clean_level^3)+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level,new_df_starExist )
+
+total_pricetwo3 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district),new_df_starExist )
+a = summary(total_pricetwo1)
+coef(a)[, 2]
+a
+   
+total_pricetwo4 =  lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+as.factor(district),new_df)
+a = summary(singleroom_pricetwo3)
+a
+length(singleroom_pricetwo3$fitted.values)
+total_pricetwo4$coefficients  
+coef(a)[, 2]
+
+ 
+ summary(total_pricetwo3)       
+
+ggplot(new_df_starExist, aes(x = cp_level, y = price_two))+geom_smooth()
+#summary(total_pricetwo2)
+head(new_df)
+```
+#correlation matrix
+```{r}
+library(Hmisc)
+library(polycor)
+c("minibar","gym", "self_breakf",  "flatTV", "spa", "parking", "restaurant", "bathtub", "securityBox" , "nightmarket","clean_level", "comfort_level", "facility_level", "location_level", "service_level", "cp_level", "wifi_level")
+x = test[, c("minibar","gym", "self_breakf",  "flatTV", "spa", "parking", "restaurant", "bathtub", "securityBox" , "nightmarket","clean_level", "comfort_level", "facility_level", "location_level", "service_level", "cp_level", "wifi_level", "MRT_dist")]
+rcorr(x, type="pearson")
+cor(x, x)
+polychor(x) 
+test = filter(new_df_starExist, is.na(clean_level) == FALSE & is.na(comfort_level) == FALSE& is.na(facility_level) == FALSE& is.na(location_level) == FALSE& is.na(service_level) == FALSE& is.na(cp_level) == FALSE& is.na(wifi_level) == FALSE& is.na(MRT_dist) == FALSE)
+class(new_df_starExist$MRT_dist)
+new_df_starExist$clean_level = as.integer(new_df_starExist$clean_level)
+new_df_starExist$gym = as.integer(new_df_starExist$gym)
+new_df_starExist$comfort_level = as.integer(new_df_starExist$comfort_level)
+new_df_starExist$facility_level = as.integer(new_df_starExist$facility_level)
+new_df_starExist$location_level =as.integer(new_df_starExist$location_level)
+new_df_starExist$service_level =as.integer(new_df_starExist$service_level)
+new_df_starExist$cp_level = as.integer(new_df_starExist$cp_level)
+new_df_starExist$wifi_level = as.integer(new_df_starExist$wifi_level)
+```
+
+#first table
+```{r,echo = FALSE, message = FALSE}
+
+t = lm(price_two~cp_level,new_df)
+require(memisc)
+mt = mtable( 'model' = t,summary.stats = c('R-squared','F','p','N'))
+
+require(pander)
+library(sjPlot)
+sjt.lm( singleroom_pricetwo3_log, depvar.labels = c("model0","model1", "model2", "model3"), file="output.html",p.numeric = FALSE)# You have to save the table in html format.
+htmltools::includeHTML("output.html")
+
+stock = dyn$lm(y1 ~ x1 + lag(x2, -1) + x2 + x3 +x4)
+stock_matrix <- matrix(summary(stock)$coef, ncol = 4L)
+ try = matrix(summary(total_pricetwo0_log)$coef, ncol = 4L)
+rownames(stock_matrix) <- c("Intercept", "$x_{1,t}$", "$x_{2,t-1}$", "$x_2$", "$x_3$", "$x_4$")
+
+print(xtable(try), sanitize.text.function = identity)
+?xtable
+newobject<-xtable(try)
+print.xtable(newobject, type="html", file="filename.html")
+xtable(linR)
+myregtables <- cbind(xtable(summary(quantreg25)), xtable(summary(quantreg50)))
+myregtables
+texreg(list(top25_rq,top50_rq, top75_rq ), se = "iid")
+texreg(list(singleroom_pricetwo0_log, singleroom_pricetwo1_log, singleroom_pricetwo2_log), se = "iid")
+single
+texreg(total_pricetwo3_log, se = "iid")
+singleroom_pricetwo3_log
+quantreg25
+summary(total_pricetwo4_log)
+```
+```{r}
+##first table bootstrap
+
+#{
+# Bootstrap 95% CI for R-Squared
+library(boot)
+# function to obtain R-Squared from the data 
+rsq <- function(formula, data, indices) {
+  d <- data[indices,] # allows boot to select sample 
+  fit <- lm(formula, data=d)
+  return(summary(fit)$r.square)
+} 
+# bootstrapping with 1000 replications 
+results <- boot(data=new_df, statistic=rsq, 
+  	R=1000, formula=price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist+location_level+wifi_level)
+
+# view results
+results 
+plot(results)
+
+# get 95% confidence interval 
+boot.ci(results, type="bca")
+
+```
+```{r}
+set.seed(3244)
+bstar = NULL # Rows of bstar will be bootstrap vectors of regression coefficients.
+n = length(new_df$price_two); 
+B = 1000
+
+for(draw in 1:B) {
+# Randomly sample from the rows of kars, with replacement
+Dstar = new_df[sample(1:n,size=n,replace=T),]
+model = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist+location_level+wifi_level+as.factor(star)+factor(district), data=new_df) 
+
+bstar = rbind(bstar,coef(model) )
+} # Next draw
+bstar[1:5,]
+Vb = var(bstar)
+
+betahat = total_pricetwo3$coefficients
+se = sqrt(diag(Vb));
+Z = betahat/se
+rbind(betahat,se,Z)
+
+
+
+```
+
+```{r,echo = FALSE, message = FALSE}
+require(lmtest)
+require(plm)
+coeftest(total_pricetwo1, vcov = vcovHC(total_pricetwo1, "HC1")) 
+
+
+
+```
+```{r,echo = FALSE, message = FALSE}
+
+coeftest(total_pricetwo2, vcov = vcovHC(total_pricetwo2, "HC1")) 
+
+```
+```{r,echo = FALSE, message = FALSE}
+
+
+#anova(total_pricetwo1, total_pricetwo2)
+
+```
+
+
+#hedonic price model(price one)
+```{r,echo = FALSE, message = FALSE}
+require(dplyr)
+#new_df_one  ==  those hotels that the price of the single room is nonNA
+new_df_one = filter(new_df_starExist,is.na(price_one) == F )
+
+head(new_df_one)
+singleroom_pricetwo0  = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist,new_df_one )
+#summary(singleroom_pricetwo1)
+singleroom_pricetwo2$coefficients
+ a = summary(singleroom_pricetwo2)
+coef(a)[, 2]
+table(new_df_one$star)
+nrow(new_df_one)
+length(new_df$price_four[which(is.na(new_df$price_four))])
+which(is.na(new_df$price_one))
+
+new_df_starExist$price_four[]
+levels(as.factor(new_df_one$star))
+ 
+ggplot(new_df_one)+stat_qq(aes(sample = price_two, colour = factor(star)))
+
+singleroom_pricetwo3$coefficients
+  a = summary(singleroom_pricetwo3)
+a
+  coef(a)[, 2]
+table(new_df_one$star)
+  
+ 
+
+    
+```
+
+```{r,echo = FALSE, message = FALSE}
+singleroom_pricetwo1  = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level,new_df_one )
+#summary(singleroom_pricetwo2)
+singleroom_pricetwo2 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star), new_df_one)
+
+
+singleroom_pricetwo3 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district), new_df_one)
+```
+```{r,echo = FALSE, message = FALSE}
+#anova(singleroom_pricetwo1, singleroom_pricetwo2)
+
+```
+```{r,echo = FALSE, message = FALSE}
+singleroom_priceone1  = lm(price_one~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist,new_df_one )
+
+##summary(a1_one_one)
+```
+```{r,echo = FALSE, message = FALSE}
+singleroom_priceone2  = lm(price_one~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist+as.factor(star),new_df_one )
+##summary(a_one_one)
+singleroom_priceone3 = lm(price_one~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist+as.factor(star)+factor(district), new_df_one)
+```
+```{r,echo = FALSE, message = FALSE}
+#anova(a_one, a1_one)
+#head(new_df)
+
+```
+#for log price one 
+```{r}
+
+
+
+```
+
+#second table
+```{r,echo = FALSE, message = FALSE}
+#a_one,singleroom_pricetwo3
+#a1_one ,"model3"
+sjt.lm( singleroom_pricetwo0,singleroom_pricetwo1,singleroom_pricetwo2,depvar.labels = c("model0","model 1", "model2"), file="output.html",p.numeric = FALSE)# You have to save the table in html format.
+htmltools::includeHTML("output.html")
+#sjt.lm(top75_ols,  file="output.html",p.numeric = FALSE)
+
+```
+#third table
+```{r,echo = FALSE, message = FALSE}
+sjt.lm( singleroom_priceone1, singleroom_priceone2,depvar.labels = c("model 1", "model 2"), file="output.html",p.numeric = FALSE)# You have to save the table in html format.
+htmltools::includeHTML("output.html")
+
+
+```
+#bootstrap  error term isnt normal distribution or under small sample
+
+```{r,echo = FALSE, message = FALSE}
+require(ggplot2)
+
+```
+#another regression for individual scoring
+
+```{r,echo = FALSE, message = FALSE}
+command_df <- read_csv("~/Documents/dsR/code/command_df.csv")
+command_df = command_df[, -1]
+attach(command_df)
+#head(command_df)
+
+#test = substr("單人","獨行旅客", command_df$type )
+#table(type = command_df$type, goal = command_df$goal)
+#names(command_df)
+#clean = filter(command_df, type == c("獨行旅客","夫婦/情侶","帶青少年同行的家庭","朋友團體", "攜帶幼童的家庭", ))
+#table(clean$type)
+#head(clean)
+#table(clean$goal)
+
+
+#anova(ols_command, ols_command_nogoal)
+
+command_df_re = command_df[ which(!is.na(command_df$night)), ]
+command_df_re = command_df_re[which(!is.na(command_df_re$goal)),]
+ols_command = lm(grade~factor(goal)+factor(night), command_df_re)
+a = summary(ols_command)
+length(ols_command$fitted.values)
+coef(a)[, 2]
+ols_command$coefficients
+a
+
+
+ 
+
+              
+
+texreg(grade_ols)
+
+
+```
+```{r}
+require(dplyr)
+haveNightmarket = filter(new_df_starExist, nightmarket == 1)
+require(ggplot2)
+ggplot(haveNightmarket, aes(x = star))+stat_qq(aes(sample = price_two, colour = factor(star)))+geom_boxplot(aes(y = price_two, colour = factor(star)))+labs(title = "table 1", subtitle = "hotel neaby the nightmarket" )
+#+labs(title="figure 3",subtitle="price for double room under different ratings")
+ggplot(haveNightmarket, aes(x = star))+geom_histogram(aes(colour = factor(star)))+labs(title = "table 1", subtitle = "hotel neaby the nightmarket" )
+```
+```{r}
+
+ggplot(new_df_starExist, aes(x = star))+stat_qq(aes(sample = price_two, colour = factor(star)))+geom_boxplot(aes(y = price_two, colour = factor(star)))+labs(title = "table 2", subtitle = "all hotels")
+ggplot(new_df_starExist, aes(x = star))+stat_qq(aes(sample = price_two))
+```
+
+
+```{r}
+ggplot(haveNightmarket)+stat_qq(aes(sample = price_two, colour = factor(star)))+labs(title="figure 3",subtitle="price for double room under different ratings")
+```
+
+```{r}
+
+
+ols_command_nogoal = lm(grade~factor(night), command_df_re)
+ols_command_su = summary(ols_command)
+summary(ols_command_nogoal)
+anova(ols_command_nogoal, ols_command)
+length(ols_command$fitted.values)
+command_df_re$fittedGrade = ols_command$fitted.values
+grade_ave0 = command_df_re%>%group_by(hotel)%>%summarise(ave = mean(fittedGrade))
+grade_ave0
+
+combine_ave_df0 = inner_join(hotel_df, grade_ave0, by = "hotel")
+combine_ave_df0$clean_level = as.numeric(combine_ave_df0$clean_level)
+combine_ave_df0$comfort_level = as.numeric(combine_ave_df0$comfort_level)
+combine_ave_df0$facility_level = as.numeric(combine_ave_df0$facility_level)
+combine_ave_df0$location_level = as.numeric(combine_ave_df0$location_level)
+combine_ave_df0$service_level = as.numeric(combine_ave_df0$service_level)
+combine_ave_df0$cp_level = as.numeric(combine_ave_df0$cp_level)
+combine_ave_df0$wifi_level = as.numeric(combine_ave_df0$wifi_level)
+
+overall_level = combine_ave_df0%>%group_by(hotel)%>%summarise(overall_level =( clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level)/7)
+
+grade_ols = lm(overall_level~ave, combine_ave_df)
+length(grade_ols$fitted.values)
+
+summary(grade_ols)
+combine_ave_df
+
+new_df_starExist$lprice_two = log(new_df_starExist$price_two)
+lprice_lm = lm(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level
+               , new_df_starExist)
+
+a = summary(lprice_lm)
+a$coefficients
+vif(lprice_lm)
+```
+```{r}
+
+grade_ave = command_df%>%group_by(hotel)%>%summarise(ave = mean(grade))
+#grade_ave
+
+
+hotel_df$hotel = rep(1:594)
+
+combine_ave_df = inner_join(hotel_df, grade_ave, by = "hotel")
+
+combine_ave_df$clean_level = as.numeric(combine_ave_df$clean_level)
+combine_ave_df$comfort_level = as.numeric(combine_ave_df$comfort_level)
+combine_ave_df$facility_level = as.numeric(combine_ave_df$facility_level)
+combine_ave_df$location_level = as.numeric(combine_ave_df$location_level)
+combine_ave_df$service_level = as.numeric(combine_ave_df$service_level)
+combine_ave_df$cp_level = as.numeric(combine_ave_df$cp_level)
+combine_ave_df$wifi_level = as.numeric(combine_ave_df$wifi_level)
+
+overall_level = combine_ave_df%>%group_by(hotel)%>%summarise(overall_level =( clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level)/7)
+combine_ave_df = inner_join(combine_ave_df, overall_level, by = "hotel")
+#wifi_level+clean_level+comfort_level+facility_level+location_level+service_level+
+grade_ols = lm(ave~overall_level, combine_ave_df)#???
+
+summary(grade_ols)
+#summary(grade_ols)
+```
+```{r}
+grade_ols2 = lm(ave~clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level, combine_ave_df)
+summary(grade_ols2)
+```
+
+```{r}
+require(ggplot2)
+
+ggplot(data = new_df, aes(x = star, y = price_two))+geom_jitter()+geom_smooth(stat = "smooth")
+
+```
+```{r}
+require(plotly)
+#ggplot(data = new_df, aes(x = district,y = price_two ))+geom_jitter()+geom_boxplot()
+
+p <- plot_ly(new_df, y = ~price_two, color = ~district, type = "box")
+p
+# Create a shareable link to your chart
+# Set up API credentials: https://plot.ly/r/getting-started
+
+```
+```{r}
+
+plot_ly(new_df, x =~star, y =~ price_two, color = ~star, size = ~star, text = ~paste("star ", star))
+
+```
+
+```{r}
+rep(1:3)
+new_df$num = rep(1:nrow(new_df))
+  
+ggplot(data = new_df, aes(x = num, y = price_two))+geom_jitter()+geom_boxplot()
+plot_ly(new_df, y = ~price_two,type = "box", boxpoints = "all", jitter = 0.3,pointpos = -1.8)
+quantile(new_df$price_two, na.rm = TRUE)
+```
+```{R}
+star45 = new_df%>%filter(star == c(4,5))
+quantile(star45$price_two, na.rm = TRUE)
+
+ggplot(new_df)+stat_qq(aes(sample = price_two, colour = factor(star)))+labs(title="figure 3",subtitle="price for double room under different ratings")
+ggplot(new_df)+stat_qq(aes(sample = price_one, colour = factor(star)))+labs(title="figure 4",subtitle="price for single room under different ratings")
+```
+```{r}
+ggplot(new_df)+stat_qq(aes(sample = price_one))+labs(title="figure 1",subtitle="price for single room")
+ggplot(new_df)+stat_qq(aes(sample = price_two))+labs(title="figure 1",subtitle="price for double room")
+
+ggplot(new_df)+geom_density(aes(x = price_two))
+quantile(new_df$price_two, na.rm = TRUE)
+require(dplyr)
+top75 = filter(new_df, is.na(price_two ) == FALSE) %>% filter(price_two >= 2680)
+
+```
+
+#top75 ols vs rq
+```{r}
+
+top75_ols = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level+as.factor(star)+factor(district),top75)
+summary(top75_ols)
+top5250 = filter(new_df, is.na(price_two ) == FALSE) %>% filter(price_two >= 5250)
+#top5250_ols = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level+as.factor(star)+factor(district),top5250)
+#summary(top5250_ols)
+
+
+```
+
+#quantile regression 25% 50% 75%
+```{r}
+top25_rq = rq(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district),new_df_starExist, tau=0.25, model = TRUE)
+
+arq = summary(top25_rq, se = "ker")
+
+arq
+top50_rq = rq(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district),new_df_starExist, tau=0.50, model = TRUE)
+arq50 = summary(top50_rq, se = "ker")
+
+arq50
+
+top75_rq = rq(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district),new_df_starExist, tau=0.75, model = TRUE)
+arq75 = summary(top75_rq, se = "ker")
+arq75
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+```{r}
+summary(total_pricetwo3)
+```
+#short quantile regression for 25, 50, 75%
+```{R}
+library(quantreg)
+srq75 = rq(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist,new_df_starExist, tau=0.75, model = TRUE)
+summary(srq75, se ="ker")
+
+
+srq50 = rq(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist,new_df_starExist, tau=0.50, model = TRUE)
+a = summary(srq50, se ="ker")
+
+
+srq25 = rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist,new_df_starExist, tau=0.25, model = TRUE)
+a =summary(srq25, se ="ker")
+length(a$residuals)
+
+confint(total_pricetwo3_log)
+```
+```{r}
+anova(top75_rq, top25_rq)
+stepAIC(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level+as.factor(star)+factor(district))
+
+quantreg.all <- rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket, tau = seq(0.05, 0.95, by = 0.05), data=new_df_starExist)
+quantreg.plot <- summary(quantreg.all)
+
+```
+
+#quantile regrssion 50%
+```{r}
+rq50 = rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level+as.factor(star)+factor(district),new_df, tau=0.50, model = TRUE)
+
+
+sum_rq50 = summary(rq50, se ="ker")
+length(sum_rq50$residuals)
+```
+```{r}
+
+
+
+```
+
+
+#tobit regression for dealing with the zero and nonzero star
+```{r}
+new_df_starExist = mutate(new_df, starExist = ifelse(is.na(star), 0, 1))
+
+table(new_df_starExist$starExist)
+table(new_df$star)
+star_logit = glm(starExist~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level+factor(district),  family=binomial (link = "logit"), new_df_starExist)
+summary(star_logit)
+
+
+```
+```{r}
+LogitScalar <- mean(dlogis(predict(star_logit, type = "link")))
+LogitScalar * coef(star_logit)
+```
+```{R}
+
+is.na(new_df_starExist$star[1]) 
+for(i in c(1:nrow(new_df_starExist))){
+  if(is.na(new_df_starExist$star[i]) == TRUE){
+    new_df_starExist$star[i] = 0
+  }
+}
+
+star_re_ols = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level+as.factor(star)+as.factor(district), new_df_starExist)
+summary(star_re_ols)
+```
+```{R}
+star_re_ols2 = lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist+as.factor(star)+factor(district), new_df_starExist)
+summary(star_re_ols2)
+```
+```{r}
+summary(lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+MRT_dist+as.factor(star)+factor(district),new_df ))
+
+
+```
+
+
+
+
+
+
+
+
+```{r}
+# Quantile Regression in R
+# Copyright 2013 by Ani Katchova
+
+# install.packages("quantreg")
+
+
+require(quantreg)
+
+# OLS regression
+olsreg <- lm(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level,new_df )
+summary(olsreg)
+
+# Quantile regression
+
+
+quantreg50 <- rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level,new_df , tau=0.5 )
+summary(quantreg50, se = "ker")
+
+quantreg75 <- rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+facility_level+service_level+MRT_dist+location_level+wifi_level , tau=0.75,new_df)
+summary(quantreg75, se = "ker")
+
+# Simultaneous quantile regression
+quantreg2575 <- rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district),new_df_starExist, tau=c(0.25, 0.75), model = TRUE)
+summary(quantreg2575,se = "ker")
+table.rq(quantreg50)
+# ANOVA test for coefficient differences
+#anova(quantreg25, quantreg75)
+?table.rq
+# Plotting data
+quantreg.all <- rq(price_two~factor(star), tau = c(0.25, 0.75), data=new_df)
+quantreg.plot <- summary(quantreg.all)
+#plot(quantreg.plot)
+quantreg2575$coefficients[,2]
+a = summary(quantreg25, se = "ker")
+coef(a)[, 1]
+a
+
+
+ quantreg25 = rq(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district),new_df_starExist, tau=0.85, model = TRUE)
+
+require(car)
+vif(total_pricetwo3_log)
+mean(as.numeric(new_df[,c(8:18)]))
+mean(as.numeric(new_df$comfort_level))
+
+mean(as.numeric(new_df$price_one[which(!is.na(new_df$price_one))]))
+sd(as.numeric(new_df$minibar[which(!is.na(new_df$minibar))]))
+
+```
+```{r}
+
+
+
+A <- matrix(runif(12), 4)
+b <- 1:4
+qr.solve(A, b) # or solve(qr(A), b)
+solve(qr(A, LAPACK = TRUE), b)
+data(stackloss)
+rq(stack.loss~stack.x)
+
+require(MASS)
+ridgeRegression = lm.ridge(lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district), new_df_starExist, lambda = seq(0.001, .05, .001))
+
+
+plot(lm.ridge(price_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district), new_df_starExist,
+              lambda = seq(0,0.1,0.001)))
+library(broom)
+td <- tidy(ridgeRegression)
+td
+g <- glance(ridgeRegression)
+g
+require(ggplot2)
+ggplot(td, aes(lambda, estimate, color = term),  family = "STKaiti") + geom_line()
+ggplot(td, aes(lambda, GCV),  family = "STKaiti") + geom_line() +
+    geom_vline(xintercept = g$lambdaGCV, col = "red", lty = 2)
+td
+
+require(ridge)
+formula = lprice_two~minibar+gym+ self_breakf+ flatTV+spa+parking+restaurant+bathtub+securityBox+ nightmarket+MRT_dist+clean_level+comfort_level+facility_level+location_level+service_level+cp_level+wifi_level+as.factor(star)+factor(district)
+
+linR = linearRidge(formula, new_df_starExist, lambda = "automatic", nPCs = NULL,scaling = c("corrForm", "scale", "none"))
+
+a = summary(linR)
+a
+coef(linR)
+mutate(new_df_starExist, coef_ols = total_pricetwo3$fitted.values)
+
+
+plot(total_pricetwo3$coefficients, y = NULL)
+linearRidge
+#require(MASS)
+#step <- stepAIC(formula, direction="both")
+#stepAIC()
+print(linR, digits = max(3,getOption("digits") - 3),signif.stars =getOption("show.signif.stars"))
+```
+```{r}
+summary(lm(price_two~factor(star), new_df))
+
+
+
+```
+```{r}
+ 
+# generate the x predictor
+x <-new_df$star
+
+# generate the y response
+y <--new_df$price_two
+xy <- data.frame(x=x, y=y)
+
+# specify the maximum polynomial degree that will be explored
+max.poly <- 7
+ 
+# cretaing data.frame which will store model predictions
+# that will be used for the smooth curves in Fig. 1
+x.new <- seq(min(!is.na(x)), max(!is.na(x)), by=0.1)
+degree <- rep(1:max.poly, each=length(x.new))
+predicted <- numeric(length(x.new)*max.poly)
+new.dat <- data.frame(x=rep(x.new, times=max.poly),
+                      degree,
+                      predicted)
+
+Poly<- function(x, degree = 1, coefs = NULL, raw = FALSE, ...) {
+       notNA<-!is.na(x)
+        answer<-poly(x[notNA], degree=degree, coefs=coefs, raw=raw, ...)
+        THEMATRIX<-matrix(NA, nrow=length(x), ncol=degree)
+        THEMATRIX[notNA,]<-answer
+        attributes(THEMATRIX)[c('degree', 'coefs', 'class')]<- attributes(answer)[c('degree', 'coefs', 'class')]
+        THEMATRIX
+ }
+
+
+  lm( y ~ Poly(x,2) )
+# fitting lm() polynomials of increasing complexity
+# (up to max.degree) and storing their predictions
+# in the new.dat data.frame
+for(i in 1:max.poly)
+{
+  sub.dat <- new.dat[new.dat$degree==i,]
+  new.dat[new.dat$degree==i,3] <- predict(lm(y~Poly(x, i)),
+                                          newdata=data.frame(x=x.new))
+}
+ 
+# plotting the data and the fitted models
+p <- ggplot()
+p + geom_point(aes(x, y), xy, colour="darkgrey")
+p + geom_line(aes(x, predicted,
+                  colour=as.character(degree)),
+                  new.dat)
+p + scale_colour_discrete(name = "Degree")
+p
+ 
+# creating empty data.frame that will store
+# AIC and BIC values of all of the models
+AIC.BIC <- data.frame(criterion=c(rep("AIC",max.poly),
+                                  rep("BIC",max.poly)),
+                      value=numeric(max.poly*2),
+                      degree=rep(1:max.poly, times=2))
+ 
+# calculating AIC and BIC values of each model
+for(i in 1:max.poly)
+{
+  AIC.BIC[i,2] <- AIC(lm(y~poly(x,i)))
+  AIC.BIC[i+max.poly,2] <- BIC(lm(y~poly(x,i)))
+}
+ 
+# function that will perform the "leave one out"
+# crossvalidation for a y~poly(x, degree) polynomial
+crossvalidate <- function(x, y, degree)
+{
+  preds <- numeric(length(x))
+    for(i in 1:length(x))
+    {
+        x.in <- x[-i]
+        x.out <- x[i]
+        y.in <- y[-i]
+        y.out <- x[i]
+        m <- lm(y.in ~ poly(x.in, degree=degree) )
+        new <- data.frame(x.in = seq(-3, 3, by=0.1))
+        preds[i]<- predict(m, newdata=data.frame(x.in=x.out))
+    }
+  # the squared error:
+  return(sum((y-preds)^2))
+}
+ 
+# crossvalidating all of the polynomial models
+# and storing their squared errors in
+# the "a" object
+a <- data.frame(cross=numeric(max.poly))
+for(i in 1:max.poly)
+{
+  a[i,1] <- crossvalidate(x, y, degree=i)
+}
+ 
+# plotting AIC and BIC against model complexity
+# (which is the polynomial degree)
+AIC.plot <- qplot(degree, value, data=AIC.BIC,
+                  geom="line", linetype=criterion) +
+                  xlab("Polynomial degree") +
+                  ylab("Criterion value") +
+                  labs(title="Information theory & Bayes")+
+                  geom_segment(aes(x=3, y=400,
+                                   xend=3, yend=325),
+                  arrow = arrow(length = unit(0.3, "cm"),
+                  angle=20, type="closed")) +
+                  theme(legend.position=c(0.8,0.5))
+AIC.plot
+ 
+# plotting crossvalidated squared errors agains
+# model complexity
+cross.plot <- qplot(1:max.poly,cross, data=a, geom=c("line"))+
+                    xlab("Polynomial degree") +
+                    ylab("Squared error") +
+                    geom_segment(aes(x=3, y=400,
+                                     xend=3, yend=200),
+                    arrow = arrow(length = unit(0.3, "cm"),
+                    angle=20, type="closed")) +
+                    labs(title="Crossvalidation")
+cross.plot
+
+
+```
+```{r}
+head(new_df)
+word = select(new_df,fir_lo, sec_lo,thir_lo,fir_hot,sec_hot,thir_hot)
+word = unlist(word)
+
+word = table(word)
+word = as.data.frame(word)
+as.matrix(word)
+word = arrange(word,desc(Freq))
+
+library(showtext)
+require(wordcloud)
+dev.new()# 新建图形设备
+showtext.begin()
+?showtext.begin()
+quartz(family="STKaiti")
+par(family = 'STHeiti')
+par(family=("Heiti TC Light"))
+wordcloud(word$word, word$Freq, min.freq = 10, random.order = F, ordered.colors = F,colors=brewer.pal(8, "Dark2"), family = "STKaiti")
+arrange(word, desc(Freq))%>%top_n(10)
+?arrange
+```
+```{r}
+library(tm)
+
+```
+
+
+
+
+$\frac{e^{x'\beta}}{(1+e^{x'\beta})^2} $
+$\sum_{i=1}^{n} X^3_i$
+$\sum_{i=1}^{n}\left( \frac{X_i}{Y_i} \right)$
+$a_i \ge 0~~~\forall i$
+$\int_0^{2\pi} \sin x~dx$
+
+$\mathbf{X} = \left[\begin{array}{rrr}1 & 2 & 3 \\4 & 5 & 6 \\7 & 8 & 9\end{array}\right]$
+
+$\begin{array}{rrr}1 & 2 & 3 \\4 & 5 & 6 \\7 & 8 & 9\end{array}$
+
+$\sqrt{b^2 - 4ac}$
+
+$X^2_{i,j}$
